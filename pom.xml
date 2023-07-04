@@ -20,9 +20,13 @@
         <!-- JUnit-->
         <junit-jupiter-engine.version>5.2.0</junit-jupiter-engine.version>
         <junit-platform-runner.version>1.2.0</junit-platform-runner.version>
+        <!-- Apache-POI -->
+        <poi.version>5.2.3</poi.version>
+        <log4j.version>2.20.0</log4j.version>
     </properties>
 
     <dependencies>
+        <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -34,6 +38,22 @@
             <artifactId>junit-platform-runner</artifactId>
             <version>${junit-platform-runner.version}</version>
             <scope>test</scope>
+        </dependency>
+        <!-- Apache-POI -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
     </dependencies>
 </project>
