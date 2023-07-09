@@ -10,8 +10,8 @@ import org.apache.poi.ss.util.CellAddress;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import vn.tinhnv.utils.excel.loader.ExcelLoader;
-import vn.tinhnv.utils.excel.loader.factory.ExcelLoaderFactory;
+import io.github.vatisteve.utils.excel.loader.ExcelLoader;
+import io.github.vatisteve.utils.excel.loader.factory.ExcelLoaderFactory;
 
 public class ExcelLoaderTest {
 

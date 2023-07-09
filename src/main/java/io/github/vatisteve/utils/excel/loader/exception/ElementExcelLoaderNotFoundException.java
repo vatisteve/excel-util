@@ -1,4 +1,4 @@
-package vn.tinhnv.utils.excel.loader.exception;
+package io.github.vatisteve.utils.excel.loader.exception;
 
 public final class ElementExcelLoaderNotFoundException extends RuntimeException {
 
