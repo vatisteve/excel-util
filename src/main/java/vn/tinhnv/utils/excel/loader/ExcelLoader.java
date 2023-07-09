@@ -196,7 +196,6 @@ public interface ExcelLoader extends AutoCloseable {
      * @param s     the sheet index
      * @param c     the column index
      * @param r     the row index
-     * @param clazz the class of {@code T}
      * @return the value type {@code T}
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
@@ -208,7 +207,6 @@ public interface ExcelLoader extends AutoCloseable {
      * @param s     the sheet name
      * @param c     the column index
      * @param r     the row index
-     * @param clazz the class of {@code T}
      * @return the value type {@code T}
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
@@ -219,7 +217,6 @@ public interface ExcelLoader extends AutoCloseable {
      * @param <T>   the specify type of value to get
      * @param s     the sheet index
      * @param c     the {@link CellAddress} from apache-poi
-     * @param clazz the class of {@code T}
      * @return the value type {@code T}
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
@@ -230,7 +227,6 @@ public interface ExcelLoader extends AutoCloseable {
      * @param <T>   the specify type of value to get
      * @param s     the sheet name
      * @param c     the {@link CellAddress} from apache-poi
-     * @param clazz the class of {@code T}
      * @return the value type {@code T}
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
@@ -245,26 +241,24 @@ public interface ExcelLoader extends AutoCloseable {
      *                                             address
      * @throws CastCellValueExcelLoaderException   if the cell value is not long
      *                                             type or can't cast to long
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     long getLong(int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException;
 
     /**
-     * @param s the sheet index
      * @param c the {@link CellAddress} from apache-poi
      * @return the cell value type long
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
      * @throws CastCellValueExcelLoaderException   if the cell value is not long
      *                                             type or can't cast to long
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     long getLong(CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException;
 
     /**
-     * @param s the sheet index
      * @param c the column index
      * @param r the row index
      * @return cell value type String
@@ -272,26 +266,24 @@ public interface ExcelLoader extends AutoCloseable {
      *                                             address
      * @throws CastCellValueExcelLoaderException   if the cell value is not long
      *                                             type or can't cast to String
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     String getString(int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException;
 
     /**
-     * @param s the sheet index
      * @param c the {@link CellAddress} from apache-poi
      * @return the cell value type String
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
      * @throws CastCellValueExcelLoaderException   if the cell value is not long
      *                                             type or can't cast to String
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     String getString(CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException;
 
     /**
-     * @param s the sheet index
      * @param c the column index
      * @param r the row index
      * @return cell value type int
@@ -299,48 +291,43 @@ public interface ExcelLoader extends AutoCloseable {
      *                                             address
      * @throws CastCellValueExcelLoaderException   if the cell value is not long
      *                                             type or can't cast to int
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     int getInteger(int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException;
 
     /**
-     * @param s the sheet index
      * @param c the {@link CellAddress} from apache-poi
      * @return the cell value type int
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
      * @throws CastCellValueExcelLoaderException   if the cell value is not long
      *                                             type or can't cast to int
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     int getInteger(CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException;
 
     /**
      * @param <T>   the specify type of value to get
-     * @param s     the sheet index
      * @param c     the column index
      * @param r     the row index
-     * @param clazz the class of {@code T}
      * @return the value type {@code T}
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     <T> T getValue(int c, int r) throws ElementExcelLoaderNotFoundException;
 
     /**
      * @param <T>   the specify type of value to get
-     * @param s     the sheet index
      * @param c     the {@link CellAddress} from apache-poi
-     * @param clazz the class of {@code T}
      * @return the value type {@code T}
      * @throws ElementExcelLoaderNotFoundException if there is no cell with that
      *                                             address
-     * @apiNote get cell value from sheet which has set before, if not the default
-     *          sheet will be choose {@value 0}
+     * <p> get cell value from sheet which has set before, if not the default
+     *          sheet will be choose
      */
     <T> T getValue(CellAddress c) throws ElementExcelLoaderNotFoundException;
 }
