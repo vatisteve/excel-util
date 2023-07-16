@@ -1,5 +1,7 @@
 package io.github.vatisteve.utils.excel.loader;
 
+import java.io.Closeable;
+
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
 
@@ -15,7 +17,7 @@ import io.github.vatisteve.utils.excel.loader.exception.ElementExcelLoaderNotFou
  * @since May 23, 2023
  *
  */
-public interface ExcelLoader extends AutoCloseable {
+public interface ExcelLoader extends Closeable {
 
     /**
      * @param s the sheet index
@@ -39,6 +41,8 @@ public interface ExcelLoader extends AutoCloseable {
     /**
      * @param i the sheet index
      * @return the sheet name
+     * @throws ElementExcelLoaderNotFoundException if there is no sheet with this
+     *                                             index
      */
     String getSheetName(int i) throws ElementExcelLoaderNotFoundException;
 

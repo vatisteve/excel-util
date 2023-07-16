@@ -1,6 +1,6 @@
 package io.github.vatisteve.utils.excel.loader.exception;
 
-public final class ElementExcelLoaderNotFoundException extends RuntimeException {
+public final class ElementExcelLoaderNotFoundException extends Exception {
 
     /**
      * 

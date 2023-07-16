@@ -1,6 +1,6 @@
 package io.github.vatisteve.utils.excel.loader.exception;
 
-public final class CastCellValueExcelLoaderException extends RuntimeException {
+public final class CastCellValueExcelLoaderException extends Exception {
 
     /**
      * 
