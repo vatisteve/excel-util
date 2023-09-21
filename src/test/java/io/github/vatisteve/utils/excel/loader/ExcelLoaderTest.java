@@ -9,9 +9,7 @@ import org.apache.poi.ss.util.CellAddress;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import io.github.vatisteve.utils.excel.loader.exception.CastCellValueExcelLoaderException;
-import io.github.vatisteve.utils.excel.loader.exception.ElementExcelLoaderNotFoundException;
-import io.github.vatisteve.utils.excel.loader.factory.ExcelLoaderFactory;
+import io.github.vatisteve.utils.excel.ExcelUtilsFactory;
 
 public class ExcelLoaderTest {
 
@@ -19,7 +17,7 @@ public class ExcelLoaderTest {
     @DisplayName("New Excel loader from local file")
     public void newInstance() {
         InputStream sourceStream = this.getClass().getResourceAsStream("/Financial_Sample.xlsx");
-        try(ExcelLoader excelLoader = ExcelLoaderFactory.createExcelLoader(sourceStream)) {
+        try(ExcelLoader excelLoader = ExcelUtilsFactory.createExcelLoader(sourceStream)) {
             assertEquals("Segment", excelLoader.getString(new CellAddress("A1")));
         } catch (IOException e) {
             e.printStackTrace();
@@ -34,7 +32,7 @@ public class ExcelLoaderTest {
     @DisplayName("Check string type")
     public void checkStringType() {
         InputStream sourceStream = this.getClass().getResourceAsStream("/Financial_Sample.xlsx");
-        try(ExcelLoader excelLoader = ExcelLoaderFactory.createExcelLoader(sourceStream)) {
+        try(ExcelLoader excelLoader = ExcelUtilsFactory.createExcelLoader(sourceStream)) {
             assertEquals("Canada", excelLoader.getString(new CellAddress("B2")));
             assertEquals("Canada", excelLoader.getString(0, new CellAddress("B2")));
             assertEquals("Canada", excelLoader.getString("Sheet1", new CellAddress("B2")));
@@ -54,7 +52,7 @@ public class ExcelLoaderTest {
     @DisplayName("Check numberic type")
     public void checkNumbericType() {
         InputStream sourceStream = this.getClass().getResourceAsStream("/Financial_Sample.xlsx");
-        try(ExcelLoader excelLoader = ExcelLoaderFactory.createExcelLoader(sourceStream)) {
+        try(ExcelLoader excelLoader = ExcelUtilsFactory.createExcelLoader(sourceStream)) {
             assertEquals(3, excelLoader.getLong(new CellAddress("F2")));
             assertEquals(3, excelLoader.getInteger(new CellAddress("F2")));
             assertEquals(3, ((Double) excelLoader.getValue(new CellAddress("F2"))).intValue());

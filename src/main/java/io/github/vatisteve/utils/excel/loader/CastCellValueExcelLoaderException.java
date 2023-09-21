@@ -1,4 +1,4 @@
-package io.github.vatisteve.utils.excel.loader.exception;
+package io.github.vatisteve.utils.excel.loader;
 
 public final class CastCellValueExcelLoaderException extends Exception {
 

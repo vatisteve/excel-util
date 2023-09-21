@@ -1,4 +1,4 @@
-package io.github.vatisteve.utils.excel.loader.exception;
+package io.github.vatisteve.utils.excel.loader;
 
 import io.github.vatisteve.utils.excel.enumeration.ElementIdentifier;
 import io.github.vatisteve.utils.excel.enumeration.ExcelElement;
