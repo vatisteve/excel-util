@@ -1,10 +1,11 @@
 package io.github.vatisteve.utils.excel.loader.implementation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
-
+import io.github.vatisteve.utils.excel.enumeration.ElementIdentifier;
+import io.github.vatisteve.utils.excel.enumeration.ExcelElement;
+import io.github.vatisteve.utils.excel.helper.ExcelHelper;
+import io.github.vatisteve.utils.excel.loader.ExcelLoader;
+import io.github.vatisteve.utils.excel.loader.exception.CastCellValueExcelLoaderException;
+import io.github.vatisteve.utils.excel.loader.exception.ElementExcelLoaderNotFoundException;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -12,21 +13,18 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellAddress;
 
-import io.github.vatisteve.utils.excel.helper.ExcelHelper;
-import io.github.vatisteve.utils.excel.loader.ExcelLoader;
-import io.github.vatisteve.utils.excel.loader.exception.CastCellValueExcelLoaderException;
-import io.github.vatisteve.utils.excel.loader.exception.ElementExcelLoaderNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class ExcelLoaderImpl implements ExcelLoader {
 
-    private Workbook workbook;
+    private final Workbook workbook;
     private Sheet defaultSheet;
 
-    private static final BinaryOperator<String> notFoundMessage = (t, s) -> String
-            .format("There is no %s with '%s'", t, s);
-
-    public ExcelLoaderImpl(InputStream iputStream) throws EncryptedDocumentException, IOException {
-        workbook = WorkbookFactory.create(iputStream);
+    public ExcelLoaderImpl(InputStream inputStream) throws EncryptedDocumentException, IOException {
+        workbook = WorkbookFactory.create(inputStream);
         defaultSheet = workbook.getSheetAt(0);
     }
 
@@ -35,14 +33,13 @@ public class ExcelLoaderImpl implements ExcelLoader {
         try {
             this.defaultSheet = workbook.getSheetAt(s);
         } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s);
         }
     }
 
     @Override
     public void setDefaultSheet(String s) throws ElementExcelLoaderNotFoundException {
-        this.defaultSheet = Optional.ofNullable(workbook.getSheet(s))
-                .orElseThrow(() -> new ElementExcelLoaderNotFoundException(notFoundMessage.apply("sheet name", s)));
+        this.defaultSheet = Optional.ofNullable(workbook.getSheet(s)).orElseThrow(() -> new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s));
     }
 
     @Override
@@ -55,7 +52,7 @@ public class ExcelLoaderImpl implements ExcelLoader {
         try {
             return workbook.getSheetName(i);
         } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, i);
         }
     }
 
@@ -64,150 +61,117 @@ public class ExcelLoaderImpl implements ExcelLoader {
         return workbook.getSheetIndex(n);
     }
 
-    @Override
-    public long getLong(int s, int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    private <T> T castToNumber(Sheet sheet, int c, int r, Function<Double, T> transformFromDouble) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        try {
+            Cell cell = ExcelHelper.getCell(sheet, c, r);
+            return Optional.ofNullable(cell).map(ExcelHelper::getCellValue).map(Double.class::cast).map(transformFromDouble).orElseThrow(() -> new ElementExcelLoaderNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r));
+        } catch (ClassCastException e) {
+            throw new CastCellValueExcelLoaderException(e.getMessage());
+        }
+    }
+
+    private String castToString(Sheet sheet, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        try {
+            Cell cell = ExcelHelper.getCell(sheet, c, r);
+            return Optional.ofNullable(cell).map(ExcelHelper::getCellValue).map(String::valueOf).orElseThrow(() -> new ElementExcelLoaderNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r));
+        } catch (ClassCastException e) {
+            throw new CastCellValueExcelLoaderException(e.getMessage());
+        }
+    }
+
+    private <T> T castToNumber(int s, int c, int r, Function<Double, T> transformFromDouble) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         try {
             Sheet workingSheet = workbook.getSheetAt(s);
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ((Double) ExcelHelper.getCellValue(cell)).longValue();
+            return castToNumber(workingSheet, c, r, transformFromDouble);
         } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s);
         }
     }
 
-    @Override
-    public long getLong(String s, int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        Sheet workingSheet = workbook.getSheet(s);
-        if (workingSheet == null)
-            throw new ElementExcelLoaderNotFoundException(notFoundMessage.apply("sheet", s));
-
+    private <T> T castToNumber(String s, int c, int r, Function<Double, T> transformFromDouble) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         try {
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ((Double) ExcelHelper.getCellValue(cell)).longValue();
+            Sheet workingSheet = workbook.getSheet(s);
+            return castToNumber(workingSheet, c, r, transformFromDouble);
         } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.NAME, s);
+        }
+    }
+
+    private String castToString(int s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        try {
+            Sheet workingSheet = workbook.getSheetAt(s);
+            return castToString(workingSheet, c, r);
+        } catch (IllegalArgumentException e) {
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s);
+        }
+    }
+
+    private String castToString(String s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        try {
+            Sheet workingSheet = workbook.getSheet(s);
+            return castToString(workingSheet, c, r);
+        } catch (IllegalArgumentException e) {
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.NAME, s);
         }
     }
 
     @Override
-    public long getLong(int s, CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public long getLong(int s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToNumber(s, c, r, Double::longValue);
+    }
+
+    @Override
+    public long getLong(String s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToNumber(s, c, r, Double::longValue);
+    }
+
+    @Override
+    public long getLong(int s, CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getLong(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public long getLong(String s, CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public long getLong(String s, CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getLong(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public String getString(int s, int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        try {
-            Sheet workingSheet = workbook.getSheetAt(s);
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return (String) ExcelHelper.getCellValue(cell);
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+    public String getString(int s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToString(s, c, r);
     }
 
     @Override
-    public String getString(String s, int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        Sheet workingSheet = workbook.getSheet(s);
-        if (workingSheet == null)
-            throw new ElementExcelLoaderNotFoundException(notFoundMessage.apply("sheet", s));
-
-        try {
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return (String) ExcelHelper.getCellValue(cell);
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+    public String getString(String s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToString(s, c, r);
     }
 
     @Override
-    public String getString(int s, CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public String getString(int s, CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getString(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public String getString(String s, CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public String getString(String s, CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getString(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public int getInteger(int s, int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        try {
-            Sheet workingSheet = workbook.getSheetAt(s);
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ((Double) ExcelHelper.getCellValue(cell)).intValue();
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+    public int getInteger(int s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToNumber(s, c, r, Double::intValue);
     }
 
     @Override
-    public int getInteger(String s, int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        Sheet workingSheet = workbook.getSheet(s);
-        if (workingSheet == null)
-            throw new ElementExcelLoaderNotFoundException(notFoundMessage.apply("sheet", s));
-
-        try {
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ((Double) ExcelHelper.getCellValue(cell)).intValue();
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+    public int getInteger(String s, int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToNumber(s, c, r, Double::intValue);
     }
 
     @Override
-    public int getInteger(int s, CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public int getInteger(int s, CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getInteger(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public int getInteger(String s, CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public int getInteger(String s, CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getInteger(s, c.getColumn(), c.getRow());
     }
 
@@ -216,29 +180,22 @@ public class ExcelLoaderImpl implements ExcelLoader {
         try {
             Sheet workingSheet = workbook.getSheetAt(s);
             Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
+            if (cell == null) throw new ElementExcelLoaderNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
             return ExcelHelper.getCellValue(cell);
         } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s);
         }
     }
 
     @Override
     public <T> T getValue(String s, int c, int r) throws ElementExcelLoaderNotFoundException {
-        Sheet workingSheet = workbook.getSheet(s);
-        if (workingSheet == null)
-            throw new ElementExcelLoaderNotFoundException(notFoundMessage.apply("sheet", s));
-
         try {
+            Sheet workingSheet = workbook.getSheet(s);
             Cell cell = ExcelHelper.getCell(workingSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
+            if (cell == null) throw new ElementExcelLoaderNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
             return ExcelHelper.getCellValue(cell);
         } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
+            throw new ElementExcelLoaderNotFoundException(ExcelElement.SHEET, ElementIdentifier.NAME, s);
         }
     }
 
@@ -254,17 +211,7 @@ public class ExcelLoaderImpl implements ExcelLoader {
 
     @Override
     public long getLong(int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        try {
-            Cell cell = ExcelHelper.getCell(defaultSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ((Double) ExcelHelper.getCellValue(cell)).longValue();
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+        return castToNumber(defaultSheet, c, r, Double::longValue);
     }
 
     @Override
@@ -273,40 +220,18 @@ public class ExcelLoaderImpl implements ExcelLoader {
     }
 
     @Override
-    public String getString(int c, int r)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        try {
-            Cell cell = ExcelHelper.getCell(defaultSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return (String) ExcelHelper.getCellValue(cell);
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+    public String getString(int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+        return castToString(defaultSheet, c, r);
     }
 
     @Override
-    public String getString(CellAddress c)
-            throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
+    public String getString(CellAddress c) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
         return getString(c.getColumn(), c.getRow());
     }
 
     @Override
     public int getInteger(int c, int r) throws ElementExcelLoaderNotFoundException, CastCellValueExcelLoaderException {
-        try {
-            Cell cell = ExcelHelper.getCell(defaultSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ((Double) ExcelHelper.getCellValue(cell)).intValue();
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        } catch (ClassCastException e) {
-            throw new CastCellValueExcelLoaderException(e.getMessage());
-        }
+        return castToNumber(defaultSheet, c, r, Double::intValue);
     }
 
     @Override
@@ -316,15 +241,9 @@ public class ExcelLoaderImpl implements ExcelLoader {
 
     @Override
     public <T> T getValue(int c, int r) throws ElementExcelLoaderNotFoundException {
-        try {
-            Cell cell = ExcelHelper.getCell(defaultSheet, c, r);
-            if (cell == null)
-                throw new ElementExcelLoaderNotFoundException(
-                        notFoundMessage.apply("cell address", "[" + c + "," + r + "]"));
-            return ExcelHelper.getCellValue(cell);
-        } catch (IllegalArgumentException e) {
-            throw new ElementExcelLoaderNotFoundException(e.getMessage());
-        }
+        Cell cell = ExcelHelper.getCell(defaultSheet, c, r);
+        if (cell == null) throw new ElementExcelLoaderNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
+        return ExcelHelper.getCellValue(cell);
     }
 
     @Override
