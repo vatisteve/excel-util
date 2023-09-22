@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import org.apache.poi.ss.util.CellAddress;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +22,7 @@ public class ExcelLoaderTest {
             assertEquals("Segment", excelLoader.getString(new CellAddress("A1")));
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ElementExcelLoaderNotFoundException e) {
+        } catch (ElementNotFoundException e) {
             e.printStackTrace();
         } catch (CastCellValueExcelLoaderException e) {
             e.printStackTrace();
@@ -41,7 +42,7 @@ public class ExcelLoaderTest {
             assertEquals("Canada", excelLoader.getValue("Sheet1", 1, 1));
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ElementExcelLoaderNotFoundException e) {
+        } catch (ElementNotFoundException e) {
             e.printStackTrace();
         } catch (CastCellValueExcelLoaderException e) {
             e.printStackTrace();
@@ -58,7 +59,7 @@ public class ExcelLoaderTest {
             assertEquals(3, ((Double) excelLoader.getValue(new CellAddress("F2"))).intValue());
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ElementExcelLoaderNotFoundException e) {
+        } catch (ElementNotFoundException e) {
             e.printStackTrace();
         } catch (CastCellValueExcelLoaderException e) {
             e.printStackTrace();

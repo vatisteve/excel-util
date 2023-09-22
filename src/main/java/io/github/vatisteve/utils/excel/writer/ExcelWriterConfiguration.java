@@ -5,48 +5,42 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import java.time.ZoneId;
 
 public interface ExcelWriterConfiguration {
-    String getDateTimeFormat();
-    ZoneId getZoneId();
-    CellStyle getCellStyle();
-    boolean isWithExcelHeader();
-    Object[] getHeaderData();
-    String getNumberFormat();
-    short getRowHeight();
+    String defaultLocalTimeFormat();
+    ZoneId defaultZoneId();
+    CellStyle defaultCellStyle();
+    boolean withExcelHeader();
+    Object[] excelHeaderData();
+    short defaultRowHeight();
 
     class DefaultConfiguration implements ExcelWriterConfiguration {
 
         @Override
-        public String getDateTimeFormat() {
-            return "yyyy/MM/dd HH:mm";
+        public String defaultLocalTimeFormat() {
+            return "HH:mm:ss";
         }
 
         @Override
-        public ZoneId getZoneId() {
+        public ZoneId defaultZoneId() {
             return ZoneId.systemDefault();
         }
 
         @Override
-        public CellStyle getCellStyle() {
+        public CellStyle defaultCellStyle() {
             return null;
         }
 
         @Override
-        public boolean isWithExcelHeader() {
+        public boolean withExcelHeader() {
             return false;
         }
 
         @Override
-        public Object[] getHeaderData() {
+        public Object[] excelHeaderData() {
             return new Object[] {};
         }
 
         @Override
-        public String getNumberFormat() {
-            return null;
-        }
-
-        @Override
-        public short getRowHeight() {
+        public short defaultRowHeight() {
             return -1; // auto size
         }
     }

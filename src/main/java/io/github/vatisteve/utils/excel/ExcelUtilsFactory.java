@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 import io.github.vatisteve.utils.excel.writer.ExcelWriter;
 import io.github.vatisteve.utils.excel.writer.ExcelWriterConfiguration;
+import io.github.vatisteve.utils.excel.writer.ExcelWriterException;
 import io.github.vatisteve.utils.excel.writer.ExcelWriterImpl;
 import org.apache.poi.EncryptedDocumentException;
 
@@ -32,11 +33,11 @@ public final class ExcelUtilsFactory {
         return new ExcelWriterImpl(configuration);
     }
 
-    public static ExcelWriter createExcelWriter(InputStream inputStream) throws IOException {
+    public static ExcelWriter createExcelWriter(InputStream inputStream) throws ExcelWriterException {
         return new ExcelWriterImpl(inputStream, new ExcelWriterConfiguration.DefaultConfiguration());
     }
 
-    public static ExcelWriter createExcelWriter(InputStream inputStream, ExcelWriterConfiguration configuration) throws IOException {
+    public static ExcelWriter createExcelWriter(InputStream inputStream, ExcelWriterConfiguration configuration) throws ExcelWriterException {
         return new ExcelWriterImpl(inputStream, configuration);
     }
 }
