@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -27,13 +28,10 @@ public class ExcelWriterImpl implements ExcelWriter {
     private int nextColumnIdx = 0;
     private int cellIncrement = 1;
 
-    public ExcelWriterConfiguration getConfiguration() {
-        return configuration;
-    }
-
     public ExcelWriterImpl(InputStream is, ExcelWriterConfiguration configuration) throws ExcelWriterException {
         try {
             this.workbook = new SXSSFWorkbook(new XSSFWorkbook(is), -1, true);
+            initHeader();
         } catch (IOException e) {
             throw new ExcelWriterException(e.getMessage());
         }
@@ -44,6 +42,7 @@ public class ExcelWriterImpl implements ExcelWriter {
         this.workbook = new XSSFWorkbook();
         this.configuration = configuration;
         workbook.createSheet();
+        initHeader();
     }
 
     private Cell switchToNewCell() {
@@ -78,6 +77,14 @@ public class ExcelWriterImpl implements ExcelWriter {
         }
         nextRowIdx++;
         nextColumnIdx = 0;
+    }
+
+    private void initHeader() {
+        ExcelWriterConfiguration.ExcelHeader header = configuration.excelHeader();
+        if (header != null) {
+            startNewRow(header.getHeight(), header.getStyle());
+            Arrays.asList(header.getHeaders()).forEach(h -> switchToNewCell().setCellValue(h));
+        }
     }
 
     private void detachCellValue(Object value, CellStyle style) {
@@ -200,9 +207,7 @@ public class ExcelWriterImpl implements ExcelWriter {
         if (attribute.getValue() != null) {
             detachCellValue(attribute.getValue(), attribute.getCellStyle());
         } else {
-            Cell cell = switchToNewCell();
-            cell.setCellStyle(attribute.getCellStyle());
-            nextColumnIdx++;
+            switchToNewCell().setCellStyle(attribute.getCellStyle());
         }
     }
 

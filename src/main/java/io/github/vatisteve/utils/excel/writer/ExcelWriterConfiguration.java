@@ -6,13 +6,16 @@ import java.time.ZoneId;
 
 public interface ExcelWriterConfiguration {
     String defaultLocalTimeFormat();
+
     ZoneId defaultZoneId();
+
     CellStyle defaultCellStyle();
-    boolean withExcelHeader();
-    Object[] excelHeaderData();
+
+    ExcelHeader excelHeader();
+
     short defaultRowHeight();
 
-    class DefaultConfiguration implements ExcelWriterConfiguration {
+    final class DefaultConfiguration implements ExcelWriterConfiguration {
 
         @Override
         public String defaultLocalTimeFormat() {
@@ -30,18 +33,62 @@ public interface ExcelWriterConfiguration {
         }
 
         @Override
-        public boolean withExcelHeader() {
-            return false;
-        }
-
-        @Override
-        public Object[] excelHeaderData() {
-            return new Object[] {};
+        public ExcelHeader excelHeader() {
+            return null;
         }
 
         @Override
         public short defaultRowHeight() {
             return -1; // auto size
+        }
+    }
+
+    class ExcelHeader {
+        private final String[] headers;
+        private final CellStyle style;
+        private final short height;
+
+        private ExcelHeader(Builder builder) {
+            this.headers = builder.headers;
+            this.style = builder.style;
+            this.height = builder.height;
+        }
+
+        public String[] getHeaders() {
+            return headers;
+        }
+
+        public CellStyle getStyle() {
+            return style;
+        }
+
+        public short getHeight() {
+            return height;
+        }
+
+        public static final class Builder {
+            private String[] headers;
+            private CellStyle style;
+            private short height = -1;
+
+            public Builder headers(String... headers) {
+                this.headers = headers;
+                return this;
+            }
+
+            public Builder style(CellStyle style) {
+                this.style = style;
+                return this;
+            }
+
+            public Builder height(short height) {
+                this.height = height;
+                return this;
+            }
+
+            public ExcelHeader build() {
+                return new ExcelHeader(this);
+            }
         }
     }
 }
