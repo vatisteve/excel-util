@@ -2,12 +2,12 @@
 <project
     xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.vatisteve</groupId>
     <artifactId>excel-util</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
 
     <name>excel-util</name>
     <description>
@@ -18,13 +18,13 @@
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
     <developers>
         <developer>
-            <name>tinhnv</name>
+            <name>vatisteve</name>
             <email>vatisteve@gmail.com</email>
             <organization>Excel util</organization>
             <organizationUrl>https://github.com/vatisteve</organizationUrl>
@@ -53,8 +53,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- JUnit-->
-        <junit-jupiter-engine.version>5.2.0</junit-jupiter-engine.version>
-        <junit-platform-runner.version>1.2.0</junit-platform-runner.version>
+        <junit-jupiter-engine.version>5.9.2</junit-jupiter-engine.version>
+        <junit-platform-runner.version>1.10.0</junit-platform-runner.version>
         <!-- Apache-POI -->
         <poi.version>5.2.3</poi.version>
         <log4j.version>2.20.0</log4j.version>
