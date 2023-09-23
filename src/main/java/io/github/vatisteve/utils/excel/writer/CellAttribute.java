@@ -7,7 +7,7 @@ public final class CellAttribute {
     private final CellStyle cellStyle;
     private final Object value;
 
-    private CellAttribute(CellAttributeBuilder builder) {
+    private CellAttribute(Builder builder) {
         this.cellStyle = builder.cellStyle;
         this.value = builder.value;
     }
@@ -20,13 +20,13 @@ public final class CellAttribute {
         return value;
     }
 
-    public static final class CellAttributeBuilder {
+    public static final class Builder {
         private final CellStyle cellStyle;
         private Object value;
-        public CellAttributeBuilder(CellStyle style) {
+        public Builder(CellStyle style) {
             this.cellStyle = style;
         }
-        public CellAttributeBuilder value(Object value) {
+        public Builder value(Object value) {
             this.value = value;
             return this;
         }

@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -31,22 +30,26 @@ public class ExcelWriterImpl implements ExcelWriter {
     public ExcelWriterImpl(InputStream is, ExcelWriterConfiguration configuration) throws ExcelWriterException {
         try {
             this.workbook = new SXSSFWorkbook(new XSSFWorkbook(is), -1, true);
-            initHeader();
         } catch (IOException e) {
             throw new ExcelWriterException(e.getMessage());
         }
         this.configuration = configuration;
+        initHeader();
     }
 
     public ExcelWriterImpl(ExcelWriterConfiguration configuration) {
-        this.workbook = new XSSFWorkbook();
+        this.workbook = new SXSSFWorkbook();
         this.configuration = configuration;
-        workbook.createSheet();
+        this.sheet = workbook.createSheet();
+        this.workbook.setSheetName(0, configuration.sheetName(0));
         initHeader();
     }
 
     private Cell switchToNewCell() {
-        return currentRow.getCell(nextColumnIdx++, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+        Cell cell = currentRow.getCell(nextColumnIdx++, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+        CellStyle style = configuration.defaultCellStyle(workbook);
+        if (style != null) cell.setCellStyle(style);
+        return cell;
     }
 
     private Cell switchToNewCell(CellStyle style) {
@@ -56,34 +59,26 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     private void initRowAttribute() {
-        if (configuration.defaultCellStyle() != null) currentRow.setRowStyle(configuration.defaultCellStyle());
-        if (configuration.defaultRowHeight() >= 0) currentRow.setHeight(configuration.defaultRowHeight());
+        currentRow.setHeight(configuration.defaultRowHeight());
         nextRowIdx++;
         nextColumnIdx = 0;
     }
 
-    private void initRowAttribute(short height, CellStyle style) {
-        if (style != null) {
-            currentRow.setRowStyle(style);
-        } else if (configuration.defaultCellStyle() != null) {
-            currentRow.setRowStyle(configuration.defaultCellStyle());
-        }
-        if (height == 0) {
-            currentRow.setZeroHeight(true);
-        } else if (height > 0) {
-            currentRow.setHeight(height);
-        } else if (configuration.defaultRowHeight() >= 0) {
-            currentRow.setZeroHeight(true);
-        }
+    private void initRowAttribute(short height) {
+        currentRow.setHeight(height);
         nextRowIdx++;
         nextColumnIdx = 0;
     }
 
     private void initHeader() {
-        ExcelWriterConfiguration.ExcelHeader header = configuration.excelHeader();
+        ExcelWriterConfiguration.ExcelHeader header = configuration.excelHeader(workbook);
         if (header != null) {
-            startNewRow(header.getHeight(), header.getStyle());
-            Arrays.asList(header.getHeaders()).forEach(h -> switchToNewCell().setCellValue(h));
+            startNewRow(header.getHeight());
+            CellStyle headerStyle = header.getStyle();
+            if (headerStyle == null) headerStyle = configuration.defaultCellStyle(workbook);
+            for (String h : header.getHeaders()) {
+                switchToNewCell(headerStyle).setCellValue(h);
+            }
         }
     }
 
@@ -130,7 +125,6 @@ public class ExcelWriterImpl implements ExcelWriter {
         } else {
             cell.setCellValue(value.toString());
         }
-        nextColumnIdx++;
     }
 
     private LocalDateTime fromInstant(Instant value) {
@@ -155,6 +149,11 @@ public class ExcelWriterImpl implements ExcelWriter {
 
     private static String fromBigInteger(BigInteger value) {
         return value.toString();
+    }
+
+    @Override
+    public Workbook getWorkbook() {
+        return workbook;
     }
 
     @Override
@@ -186,17 +185,17 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     @Override
-    public void startNewRow(short height, CellStyle style) {
+    public void startNewRow(short height) {
         currentRow = sheet.createRow(nextRowIdx);
-        initRowAttribute(height, style);
+        initRowAttribute(height);
     }
 
     @Override
-    public void startAtRow(int index, short height, CellStyle style) throws ElementNotFoundException {
+    public void startAtRow(int index, short height) throws ElementNotFoundException {
         currentRow = sheet.getRow(index);
         if (currentRow != null) {
             nextRowIdx = index;
-            initRowAttribute(height, style);
+            initRowAttribute(height);
         } else {
             throw new ElementNotFoundException(ExcelElement.ROW, ElementIdentifier.POSITION, index);
         }
@@ -220,13 +219,11 @@ public class ExcelWriterImpl implements ExcelWriter {
     @Override
     public void autoIncrementCell() {
         switchToNewCell().setCellValue(cellIncrement++);
-        nextColumnIdx++;
     }
 
     @Override
     public void autoIncrementCell(CellStyle style) {
         switchToNewCell(style).setCellValue(cellIncrement++);
-        nextColumnIdx++;
     }
 
     @Override

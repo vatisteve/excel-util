@@ -2,6 +2,7 @@ package io.github.vatisteve.utils.excel.writer;
 
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.Closeable;
 import java.math.BigDecimal;
@@ -11,12 +12,14 @@ import java.util.Calendar;
 import java.util.Date;
 
 public interface ExcelWriter extends Closeable {
+    Workbook getWorkbook();
     // initializer
     void startAtSheet(int sheetIndex, int rowIndex, int columnIndex) throws ElementNotFoundException;
     void startNewRow();
+    void startNewRow(short height);
     void startAtRow(int index) throws ElementNotFoundException;
-    void startNewRow(short height, CellStyle style);
-    void startAtRow(int index, short height, CellStyle style) throws ElementNotFoundException;
+    void startAtRow(int index, short height) throws ElementNotFoundException;
+
     // functions
     void addCell(CellAttribute attribute);
     void setCellStyle(CellStyle style);
