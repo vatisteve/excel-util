@@ -21,6 +21,7 @@ public class ExcelWriterImpl implements ExcelWriter {
 
     private final Workbook workbook;
     private final ExcelWriterConfiguration configuration;
+    private final CellStyle defaultCellStyle;
     private Sheet sheet = null;
     private Row currentRow = null;
     private int nextRowIdx = 0;
@@ -34,6 +35,7 @@ public class ExcelWriterImpl implements ExcelWriter {
             throw new ExcelWriterException(e.getMessage());
         }
         this.configuration = configuration;
+        this.defaultCellStyle = this.configuration.defaultCellStyle(workbook);
         initHeader();
     }
 
@@ -42,13 +44,13 @@ public class ExcelWriterImpl implements ExcelWriter {
         this.configuration = configuration;
         this.sheet = workbook.createSheet();
         this.workbook.setSheetName(0, configuration.sheetName(0));
+        this.defaultCellStyle = configuration.defaultCellStyle(workbook);
         initHeader();
     }
 
     private Cell switchToNewCell() {
         Cell cell = currentRow.getCell(nextColumnIdx++, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-        CellStyle style = configuration.defaultCellStyle(workbook);
-        if (style != null) cell.setCellStyle(style);
+        if (defaultCellStyle != null) cell.setCellStyle(defaultCellStyle);
         return cell;
     }
 
@@ -75,7 +77,7 @@ public class ExcelWriterImpl implements ExcelWriter {
         if (header != null) {
             startNewRow(header.getHeight());
             CellStyle headerStyle = header.getStyle();
-            if (headerStyle == null) headerStyle = configuration.defaultCellStyle(workbook);
+            if (headerStyle == null) headerStyle = defaultCellStyle;
             for (String h : header.getHeaders()) {
                 switchToNewCell(headerStyle).setCellValue(h);
             }
