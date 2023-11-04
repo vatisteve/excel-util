@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
@@ -509,6 +510,11 @@ public class ExcelWriterImpl implements ExcelWriter {
         } catch (IOException e) {
             throw new ExcelWriterException(String.format("IOException occurred: %s", e.getMessage()));
         }
+    }
+
+    @Override
+    public void build(OutputStream outputStream) throws IOException {
+        workbook.write(outputStream);
     }
 
     @Override

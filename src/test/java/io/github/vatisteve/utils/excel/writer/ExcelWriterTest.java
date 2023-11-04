@@ -39,7 +39,7 @@ public class ExcelWriterTest extends AbstractUtilsTest {
                     });
             byte[] result = writer.build();
             Assert.assertNotNull(result);
-            FileUtils.writeByteArrayToFile(FileUtils.getFile("E:\\Temporary\\test1.xlsx"), result);
+            FileUtils.writeByteArrayToFile(FileUtils.getFile("D:\\Temporary\\test1.xlsx"), result);
         }
     }
 
@@ -59,7 +59,7 @@ public class ExcelWriterTest extends AbstractUtilsTest {
             byte[] result = writer.build();
             Assert.assertNotNull(result);
             Assert.assertTrue(result.length > 0);
-            FileUtils.writeByteArrayToFile(FileUtils.getFile("E:\\Temporary\\test2.xlsx"), result);
+            FileUtils.writeByteArrayToFile(FileUtils.getFile("D:\\Temporary\\test2.xlsx"), result);
         }
     }
 
@@ -75,7 +75,7 @@ public class ExcelWriterTest extends AbstractUtilsTest {
             SampleDomain sample = ExcelLoaderTest.getSampleDomainData(new ByteArrayInputStream(inByteArray));
             sample.writeDataTo(writer);
             byte[] result = writer.build();
-            FileUtils.writeByteArrayToFile(FileUtils.getFile("E:\\Temporary\\test3.xlsx"), result);
+            FileUtils.writeByteArrayToFile(FileUtils.getFile("D:\\Temporary\\test3.xlsx"), result);
         }
     }
 }

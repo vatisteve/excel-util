@@ -5,6 +5,8 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
@@ -86,4 +88,5 @@ public interface ExcelWriter extends Closeable {
     // build
     byte[] build() throws ExcelWriterException;
 
+    void build(OutputStream outputStream) throws IOException;
 }
