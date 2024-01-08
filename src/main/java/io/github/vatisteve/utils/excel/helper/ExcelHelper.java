@@ -12,9 +12,9 @@ public final class ExcelHelper {
     }
 
     public static <T> T getCellValue(Cell cell) {
-        CellType cellType = cell.getCellType();
+        CellType cellType = cell.getCellTypeEnum();
         if (cellType == CellType.FORMULA) {
-            return getCellValue(cell, cell.getCachedFormulaResultType());
+            return getCellValue(cell, cell.getCachedFormulaResultTypeEnum());
         } else if (cellType == CellType._NONE || cellType == CellType.ERROR) {
             return null;
         } else {

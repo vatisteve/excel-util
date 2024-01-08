@@ -106,17 +106,13 @@ public class ExcelWriterImpl implements ExcelWriter {
         } else if (value instanceof Character) {
             cell.setCellValue((Character) value);
         } else if (value instanceof Instant) {
-            cell.setCellValue(fromInstant((Instant) value));
+            cell.setCellValue(Date.from((Instant) value));
         } else if (value instanceof ZonedDateTime) {
-            cell.setCellValue(fromZonedDateTime((ZonedDateTime) value));
+            cell.setCellValue(Date.from(((ZonedDateTime) value).toInstant()));
         } else if (value instanceof OffsetDateTime) {
-            cell.setCellValue(fromOffsetDateTime((OffsetDateTime) value));
+            cell.setCellValue(Date.from(((OffsetDateTime) value).toInstant()));
         } else if (value instanceof Date) {
             cell.setCellValue((Date) value);
-        } else if (value instanceof LocalDate) {
-            cell.setCellValue((LocalDate) value);
-        } else if (value instanceof LocalDateTime) {
-            cell.setCellValue((LocalDateTime) value);
         } else if (value instanceof LocalTime) {
             cell.setCellValue(fromLocalTime((LocalTime) value));
         } else if (value instanceof Calendar) {
@@ -401,26 +397,21 @@ public class ExcelWriterImpl implements ExcelWriter {
 
     @Override
     public void addCell(Instant value) {
-        switchToNewCell().setCellValue(fromInstant(value));
+        switchToNewCell().setCellValue(Date.from(value));
     }
 
     @Override
     public void addCell(ZonedDateTime value) {
-        switchToNewCell().setCellValue(fromZonedDateTime(value));
+        switchToNewCell().setCellValue(Date.from(value.toInstant()));
     }
 
     @Override
     public void addCell(OffsetDateTime value) {
-        switchToNewCell().setCellValue(fromOffsetDateTime(value));
+        switchToNewCell().setCellValue(Date.from(value.toInstant()));
     }
 
     @Override
     public void addCell(Date value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(LocalDate value) {
         switchToNewCell().setCellValue(value);
     }
 
@@ -430,28 +421,23 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     @Override
-    public void addCell(LocalDateTime value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
     public void addCell(Calendar value) {
         switchToNewCell().setCellValue(value);
     }
 
     @Override
     public void addCell(Instant value, CellStyle style) {
-        switchToNewCell(style).setCellValue(fromInstant(value));
+        switchToNewCell(style).setCellValue(Date.from(value));
     }
 
     @Override
     public void addCell(ZonedDateTime value, CellStyle style) {
-        switchToNewCell().setCellValue(fromZonedDateTime(value));
+        switchToNewCell().setCellValue(Date.from(value.toInstant()));
     }
 
     @Override
     public void addCell(OffsetDateTime value, CellStyle style) {
-        switchToNewCell().setCellValue(fromOffsetDateTime(value));
+        switchToNewCell().setCellValue(Date.from(value.toInstant()));
     }
 
     @Override
@@ -460,18 +446,8 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     @Override
-    public void addCell(LocalDate value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
     public void addCell(LocalTime value, CellStyle style) {
         switchToNewCell(style).setCellValue(fromLocalTime(value));
-    }
-
-    @Override
-    public void addCell(LocalDateTime value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
     }
 
     @Override

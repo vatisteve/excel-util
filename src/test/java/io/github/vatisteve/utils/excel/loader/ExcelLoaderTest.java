@@ -5,8 +5,10 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -65,7 +67,7 @@ public class ExcelLoaderTest extends AbstractUtilsTest {
             sample.setDiscountBand(loader.getString(3, 1));
             sample.setUnitsSold(loader.getValue(new CellAddress("E2")));
             sample.setGrossSales(BigDecimal.valueOf((Double) loader.getValue(new CellAddress("H14"))));
-            sample.setDate(LocalDate.of(1900, Month.JANUARY, 1).plusDays(loader.getLong(new CellAddress("M2")) - 2));
+            sample.setDate(Date.from(LocalDate.of(1900, Month.JANUARY, 1).plusDays(loader.getLong(new CellAddress("M2")) - 2).atStartOfDay().toInstant(ZoneOffset.UTC)));
         } catch (IOException | ElementNotFoundException | CastCellValueExcelLoaderException ignored) {}
         return sample;
     }

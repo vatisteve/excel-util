@@ -68,17 +68,13 @@ public interface ExcelWriter extends Closeable {
     void addCell(ZonedDateTime value);
     void addCell(OffsetDateTime value);
     void addCell(Date value);
-    void addCell(LocalDate value);
     void addCell(LocalTime value);
-    void addCell(LocalDateTime value);
     void addCell(Calendar value);
     void addCell(Instant value, CellStyle style);
     void addCell(ZonedDateTime value, CellStyle style);
     void addCell(OffsetDateTime value, CellStyle style);
     void addCell(Date value, CellStyle style);
-    void addCell(LocalDate value, CellStyle style);
     void addCell(LocalTime value, CellStyle style);
-    void addCell(LocalDateTime value, CellStyle style);
     void addCell(Calendar value, CellStyle style);
     // Other types
     void addCell(BigDecimal value);

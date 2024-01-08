@@ -5,6 +5,7 @@ import io.github.vatisteve.utils.excel.enumeration.ExcelElement;
 import io.github.vatisteve.utils.excel.helper.ExcelHelper;
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,7 +23,11 @@ public class ExcelLoaderImpl implements ExcelLoader {
     private Sheet defaultSheet;
 
     public ExcelLoaderImpl(InputStream inputStream) throws EncryptedDocumentException, IOException {
-        workbook = WorkbookFactory.create(inputStream);
+        try {
+            workbook = WorkbookFactory.create(inputStream);
+        } catch (InvalidFormatException e) {
+            throw new IOException(e);
+        }
         defaultSheet = workbook.getSheetAt(0);
     }
 

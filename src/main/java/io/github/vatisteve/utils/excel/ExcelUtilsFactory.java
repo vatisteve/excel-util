@@ -11,6 +11,7 @@ import org.apache.poi.EncryptedDocumentException;
 
 import io.github.vatisteve.utils.excel.loader.ExcelLoader;
 import io.github.vatisteve.utils.excel.loader.ExcelLoaderImpl;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 /**
  * @author Steve

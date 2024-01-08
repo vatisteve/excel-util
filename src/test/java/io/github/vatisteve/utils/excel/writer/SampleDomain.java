@@ -23,7 +23,7 @@ public class SampleDomain implements Serializable {
     private BigDecimal sales;
     private BigDecimal cogs;
     private BigDecimal profit;
-    private LocalDate date;
+    private Date date;
     private byte monthNumber;
     private String monthName;
     private int year;
@@ -78,7 +78,7 @@ public class SampleDomain implements Serializable {
         this.profit = profit;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
