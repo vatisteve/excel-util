@@ -41,9 +41,9 @@ public class ExcelLoaderTest extends AbstractUtilsTest {
             assertEquals("Canada", excelLoader.getString(new CellAddress("B2")));
             assertEquals("Canada", excelLoader.getString(0, new CellAddress("B2")));
             assertEquals("Canada", excelLoader.getString("Sheet1", new CellAddress("B2")));
-            assertEquals("Canada", excelLoader.getValue(1, 1));
-            assertEquals("Canada", excelLoader.getValue(0, 1, 1));
-            assertEquals("Canada", excelLoader.getValue("Sheet1", 1, 1));
+            assertEquals("Canada", excelLoader.getValue(1, 1, String.class));
+            assertEquals("Canada", excelLoader.getValue(0, 1, 1, String.class));
+            assertEquals("Canada", excelLoader.getValue("Sheet1", 1, 1, String.class));
         }
     }
 
@@ -52,9 +52,9 @@ public class ExcelLoaderTest extends AbstractUtilsTest {
     public void checkNumericType() throws IOException, CastCellValueExcelLoaderException, ElementNotFoundException {
         InputStream sourceStream = this.getClass().getResourceAsStream("/Financial_Sample.xlsx");
         try(ExcelLoader excelLoader = ExcelUtilsFactory.createExcelLoader(sourceStream)) {
-            assertEquals(3, excelLoader.getLong(new CellAddress("F2")));
-            assertEquals(3, excelLoader.getInteger(new CellAddress("F2")));
-            assertEquals(3, ((Double) excelLoader.getValue(new CellAddress("F2"))).intValue());
+            assertEquals(Long.valueOf(3), excelLoader.getLong(new CellAddress("F2")));
+            assertEquals(Integer.valueOf(3), excelLoader.getInteger(new CellAddress("F2")));
+            assertEquals(3, excelLoader.getValue(new CellAddress("F2"), Double.class).intValue());
         }
     }
 
@@ -65,8 +65,8 @@ public class ExcelLoaderTest extends AbstractUtilsTest {
             sample.setCountry(loader.getString(new CellAddress("B4")));
             sample.setProduct(loader.getString(2, 19));
             sample.setDiscountBand(loader.getString(3, 1));
-            sample.setUnitsSold(loader.getValue(new CellAddress("E2")));
-            sample.setGrossSales(BigDecimal.valueOf((Double) loader.getValue(new CellAddress("H14"))));
+            sample.setUnitsSold(loader.getValue(new CellAddress("E2"), Double.class));
+            sample.setGrossSales(BigDecimal.valueOf(loader.getValue(new CellAddress("H14"), Double.class)));
             sample.setDate(Date.from(LocalDate.of(1900, Month.JANUARY, 1).plusDays(loader.getLong(new CellAddress("M2")) - 2).atStartOfDay().toInstant(ZoneOffset.UTC)));
         } catch (IOException | ElementNotFoundException | CastCellValueExcelLoaderException ignored) {}
         return sample;

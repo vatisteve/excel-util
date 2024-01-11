@@ -21,6 +21,7 @@ public class ExcelLoaderImpl implements ExcelLoader {
 
     private final Workbook workbook;
     private Sheet defaultSheet;
+    private boolean loadCellValueWithTakingAccountOfMergedRegion;
 
     public ExcelLoaderImpl(InputStream inputStream) throws EncryptedDocumentException, IOException {
         try {
@@ -29,6 +30,11 @@ public class ExcelLoaderImpl implements ExcelLoader {
             throw new IOException(e);
         }
         defaultSheet = workbook.getSheetAt(0);
+    }
+
+    @Override
+    public void loadCellValueWithTakingAccountOfMergedRegion(boolean flag) {
+        this.loadCellValueWithTakingAccountOfMergedRegion = flag;
     }
 
     @Override
@@ -66,8 +72,9 @@ public class ExcelLoaderImpl implements ExcelLoader {
 
     private <T> T castToNumber(Sheet sheet, int c, int r, Function<Double, T> transformFromDouble) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         try {
-            Cell cell = ExcelHelper.getCell(sheet, c, r);
-            return Optional.ofNullable(cell).map(ExcelHelper::getCellValue).map(Double.class::cast).map(transformFromDouble).orElseThrow(() -> new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r));
+            Cell cell = loadCellValueWithTakingAccountOfMergedRegion ? ExcelHelper.getCellWithMerges(sheet, c, r) : ExcelHelper.getCell(sheet, c, r);
+            if (cell == null) throw new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
+            return Optional.ofNullable(ExcelHelper.getCellValue(cell, Number.class)).map(Number::doubleValue).map(transformFromDouble).orElse(null);
         } catch (ClassCastException e) {
             throw new CastCellValueExcelLoaderException(e.getMessage());
         }
@@ -75,8 +82,9 @@ public class ExcelLoaderImpl implements ExcelLoader {
 
     private String castToString(Sheet sheet, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         try {
-            Cell cell = ExcelHelper.getCell(sheet, c, r);
-            return Optional.ofNullable(cell).map(ExcelHelper::getCellValue).map(String::valueOf).orElseThrow(() -> new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r));
+            Cell cell = loadCellValueWithTakingAccountOfMergedRegion ? ExcelHelper.getCellWithMerges(sheet, c, r) : ExcelHelper.getCell(sheet, c, r);
+            if (cell == null) throw new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
+            return ExcelHelper.getCellValue(cell, String.class);
         } catch (ClassCastException e) {
             throw new CastCellValueExcelLoaderException(e.getMessage());
         }
@@ -119,22 +127,22 @@ public class ExcelLoaderImpl implements ExcelLoader {
     }
 
     @Override
-    public long getLong(int s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Long getLong(int s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return castToNumber(s, c, r, Double::longValue);
     }
 
     @Override
-    public long getLong(String s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Long getLong(String s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return castToNumber(s, c, r, Double::longValue);
     }
 
     @Override
-    public long getLong(int s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Long getLong(int s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getLong(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public long getLong(String s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Long getLong(String s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getLong(s, c.getColumn(), c.getRow());
     }
 
@@ -159,66 +167,70 @@ public class ExcelLoaderImpl implements ExcelLoader {
     }
 
     @Override
-    public int getInteger(int s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Integer getInteger(int s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return castToNumber(s, c, r, Double::intValue);
     }
 
     @Override
-    public int getInteger(String s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Integer getInteger(String s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return castToNumber(s, c, r, Double::intValue);
     }
 
     @Override
-    public int getInteger(int s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Integer getInteger(int s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getInteger(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public int getInteger(String s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Integer getInteger(String s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getInteger(s, c.getColumn(), c.getRow());
     }
 
     @Override
-    public <T> T getValue(int s, int c, int r) throws ElementNotFoundException {
+    public <T> T getValue(int s, int c, int r, Class<T> tClass) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         try {
             Sheet workingSheet = workbook.getSheetAt(s);
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
+            Cell cell = loadCellValueWithTakingAccountOfMergedRegion ? ExcelHelper.getCellWithMerges(workingSheet, c, r) : ExcelHelper.getCell(workingSheet, c, r);
             if (cell == null) throw new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
-            return ExcelHelper.getCellValue(cell);
+            return ExcelHelper.getCellValue(cell, tClass);
         } catch (IllegalArgumentException e) {
             throw new ElementNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s);
+        } catch (ClassCastException e) {
+            throw new CastCellValueExcelLoaderException(e.getMessage());
         }
     }
 
     @Override
-    public <T> T getValue(String s, int c, int r) throws ElementNotFoundException {
+    public <T> T getValue(String s, int c, int r, Class<T> tClass) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         try {
             Sheet workingSheet = workbook.getSheet(s);
-            Cell cell = ExcelHelper.getCell(workingSheet, c, r);
+            Cell cell = loadCellValueWithTakingAccountOfMergedRegion ? ExcelHelper.getCellWithMerges(workingSheet, c, r) : ExcelHelper.getCell(workingSheet, c, r);
             if (cell == null) throw new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
-            return ExcelHelper.getCellValue(cell);
+            return ExcelHelper.getCellValue(cell, tClass);
         } catch (IllegalArgumentException e) {
             throw new ElementNotFoundException(ExcelElement.SHEET, ElementIdentifier.NAME, s);
+        } catch (ClassCastException e) {
+            throw new CastCellValueExcelLoaderException(e.getMessage());
         }
     }
 
     @Override
-    public <T> T getValue(int s, CellAddress c) throws ElementNotFoundException {
-        return getValue(s, c.getColumn(), c.getRow());
+    public <T> T getValue(int s, CellAddress c, Class<T> tClass) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        return getValue(s, c.getColumn(), c.getRow(), tClass);
     }
 
     @Override
-    public <T> T getValue(String s, CellAddress c) throws ElementNotFoundException {
-        return getValue(s, c.getColumn(), c.getRow());
+    public <T> T getValue(String s, CellAddress c, Class<T> tClass) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        return getValue(s, c.getColumn(), c.getRow(), tClass);
     }
 
     @Override
-    public long getLong(int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Long getLong(int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return castToNumber(defaultSheet, c, r, Double::longValue);
     }
 
     @Override
-    public long getLong(CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Long getLong(CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getLong(c.getColumn(), c.getRow());
     }
 
@@ -233,25 +245,29 @@ public class ExcelLoaderImpl implements ExcelLoader {
     }
 
     @Override
-    public int getInteger(int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Integer getInteger(int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return castToNumber(defaultSheet, c, r, Double::intValue);
     }
 
     @Override
-    public int getInteger(CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+    public Integer getInteger(CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getInteger(c.getColumn(), c.getRow());
     }
 
     @Override
-    public <T> T getValue(int c, int r) throws ElementNotFoundException {
-        Cell cell = ExcelHelper.getCell(defaultSheet, c, r);
+    public <T> T getValue(int c, int r, Class<T> tClass) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        Cell cell = loadCellValueWithTakingAccountOfMergedRegion ? ExcelHelper.getCellWithMerges(defaultSheet, c, r) : ExcelHelper.getCell(defaultSheet, c, r);
         if (cell == null) throw new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r);
-        return ExcelHelper.getCellValue(cell);
+        try {
+            return ExcelHelper.getCellValue(cell, tClass);
+        } catch (ClassCastException e) {
+            throw new CastCellValueExcelLoaderException(e.getMessage());
+        }
     }
 
     @Override
-    public <T> T getValue(CellAddress c) throws ElementNotFoundException {
-        return getValue(c.getColumn(), c.getRow());
+    public <T> T getValue(CellAddress c, Class<T> tClass) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        return getValue(c.getColumn(), c.getRow(), tClass);
     }
 
     @Override

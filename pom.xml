@@ -7,7 +7,7 @@
 
     <groupId>io.github.vatisteve</groupId>
     <artifactId>excel-util</artifactId>
-    <version>0.2.1-poi317-alpha</version>
+    <version>1.0.0-poi317</version>
 
     <name>excel-util</name>
     <description>
