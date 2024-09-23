@@ -21,7 +21,6 @@ public interface ExcelWriter extends Closeable {
     void startNewRow(short height);
     void startAtRow(int index) throws ElementNotFoundException;
     void startAtRow(int index, short height) throws ElementNotFoundException;
-
     // functions
     void addCell(CellAttribute attribute);
     void setCellStyle(CellStyle style);
@@ -87,6 +86,5 @@ public interface ExcelWriter extends Closeable {
     void addCell(BigInteger value, CellStyle style);
     // build
     byte[] build() throws ExcelWriterException;
-
     void build(OutputStream outputStream) throws IOException;
 }

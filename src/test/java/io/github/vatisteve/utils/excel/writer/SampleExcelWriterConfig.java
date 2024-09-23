@@ -9,17 +9,12 @@ public class SampleExcelWriterConfig implements ExcelWriterConfiguration {
 //    private ExcelHeader excelHeader;
 
     @Override
-    public String defaultLocalTimeFormat() {
-        return null;
-    }
-
-    @Override
-    public ZoneId defaultZoneId() {
+    public ZoneId zoneId() {
         return ZoneId.of("Asia/Saigon");
     }
 
     @Override
-    public CellStyle defaultCellStyle(Workbook activeWb) {
+    public CellStyle cellStyle(Workbook activeWb) {
         CellStyle style = activeWb.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setBorderBottom(BorderStyle.MEDIUM);
@@ -30,7 +25,7 @@ public class SampleExcelWriterConfig implements ExcelWriterConfiguration {
     @Override
     public ExcelHeader excelHeader(Workbook activeWb) {
         // directly config from existing active workbook
-        CellStyle headerStyle = defaultCellStyle(activeWb);
+        CellStyle headerStyle = cellStyle(activeWb);
         headerStyle.setFillForegroundColor(IndexedColors.BLUE.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         Font font= activeWb.createFont();
@@ -47,7 +42,7 @@ public class SampleExcelWriterConfig implements ExcelWriterConfiguration {
     }
 
     @Override
-    public short defaultRowHeight() {
+    public short rowHeight() {
         return 500;
     }
 }

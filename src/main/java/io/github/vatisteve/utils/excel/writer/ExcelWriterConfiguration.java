@@ -7,49 +7,53 @@ import java.time.ZoneId;
 
 public interface ExcelWriterConfiguration {
 
+    /**
+     * Sheet name
+     */
     default String sheetName(int index) {
-       return String.format("Data %d", index);
+        return String.format("Data %d", index);
     }
 
-    String defaultLocalTimeFormat();
-
-    ZoneId defaultZoneId();
-
-    CellStyle defaultCellStyle(Workbook activeWb);
-
-    ExcelHeader excelHeader(Workbook activeWb);
-
-    short defaultRowHeight();
-
-    final class DefaultConfiguration implements ExcelWriterConfiguration {
-
-        @Override
-        public String defaultLocalTimeFormat() {
-            return "HH:mm:ss";
-        }
-
-        @Override
-        public ZoneId defaultZoneId() {
-            return ZoneId.systemDefault();
-        }
-
-        @Override
-        public CellStyle defaultCellStyle(Workbook activeWb) {
-            return null;
-        }
-
-        @Override
-        public ExcelHeader excelHeader(Workbook activeWb) {
-            return null;
-        }
-
-        @Override
-        public short defaultRowHeight() {
-            return -1;
-        }
+    /**
+     * Default format for local time instance
+     */
+    default String timeFormat() {
+        return "HH:mm:ss";
     }
+
+    /**
+     * ZoneId default when convert ZoneDateTime to LocalDateTime
+     */
+    default ZoneId zoneId() {
+        return ZoneId.systemDefault();
+    }
+
+    /**
+     * Default cell style
+     */
+    default CellStyle cellStyle(Workbook activeWb) {
+        return activeWb.createCellStyle();
+    }
+
+    /**
+     * Excel Header
+     */
+    default ExcelHeader excelHeader(Workbook activeWb) {
+        return null;
+    }
+
+    /**
+     * Row height
+     * @see org.apache.poi.ss.usermodel.Row#setHeight(short) 
+     */
+    default short rowHeight() {
+        return -1;
+    }
+
+    final class DefaultConfiguration implements ExcelWriterConfiguration {}
 
     class ExcelHeader {
+
         private final String[] headers;
         private final CellStyle style;
         private final short height;
@@ -79,6 +83,7 @@ public interface ExcelWriterConfiguration {
         }
 
         public static final class Builder {
+
             private String[] headers;
             private CellStyle style;
             private short height = -1;
@@ -107,6 +112,7 @@ public interface ExcelWriterConfiguration {
             public ExcelHeader build() {
                 return new ExcelHeader(this);
             }
+
         }
     }
 }

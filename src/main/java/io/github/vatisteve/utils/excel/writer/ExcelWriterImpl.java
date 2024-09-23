@@ -37,7 +37,7 @@ public class ExcelWriterImpl implements ExcelWriter {
             throw new ExcelWriterException(e.getMessage());
         }
         this.configuration = configuration;
-        this.defaultCellStyle = this.configuration.defaultCellStyle(workbook);
+        this.defaultCellStyle = configuration.cellStyle(workbook);
         initHeader();
     }
 
@@ -46,7 +46,7 @@ public class ExcelWriterImpl implements ExcelWriter {
         this.configuration = configuration;
         this.sheet = workbook.createSheet();
         this.workbook.setSheetName(0, configuration.sheetName(0));
-        this.defaultCellStyle = configuration.defaultCellStyle(workbook);
+        this.defaultCellStyle = configuration.cellStyle(workbook);
         initHeader();
     }
 
@@ -63,7 +63,7 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     private void initRowAttribute() {
-        currentRow.setHeight(configuration.defaultRowHeight());
+        currentRow.setHeight(configuration.rowHeight());
         nextRowIdx++;
         nextColumnIdx = 0;
     }
@@ -131,7 +131,7 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     private LocalDateTime fromInstant(Instant value) {
-        return fromZonedDateTime(value.atZone(configuration.defaultZoneId()));
+        return fromZonedDateTime(value.atZone(configuration.zoneId()));
     }
 
     private static LocalDateTime fromZonedDateTime(ZonedDateTime value) {
@@ -143,7 +143,7 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     private String fromLocalTime(LocalTime value) {
-        return DateTimeFormatter.ofPattern(configuration.defaultLocalTimeFormat()).format(value);
+        return DateTimeFormatter.ofPattern(configuration.timeFormat()).format(value);
     }
 
     private static String fromBigDecimal(BigDecimal value) {
