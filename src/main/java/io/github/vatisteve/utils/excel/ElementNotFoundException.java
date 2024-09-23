@@ -1,7 +1,7 @@
 package io.github.vatisteve.utils.excel;
 
-import io.github.vatisteve.utils.excel.enumeration.ElementIdentifier;
-import io.github.vatisteve.utils.excel.enumeration.ExcelElement;
+import io.github.vatisteve.utils.excel.common.ElementIdentifier;
+import io.github.vatisteve.utils.excel.common.ExcelElement;
 
 import java.util.Arrays;
 

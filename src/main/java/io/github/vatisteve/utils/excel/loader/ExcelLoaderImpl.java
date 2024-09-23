@@ -1,7 +1,7 @@
 package io.github.vatisteve.utils.excel.loader;
 
-import io.github.vatisteve.utils.excel.enumeration.ElementIdentifier;
-import io.github.vatisteve.utils.excel.enumeration.ExcelElement;
+import io.github.vatisteve.utils.excel.common.ElementIdentifier;
+import io.github.vatisteve.utils.excel.common.ExcelElement;
 import io.github.vatisteve.utils.excel.helper.ExcelHelper;
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import org.apache.poi.EncryptedDocumentException;

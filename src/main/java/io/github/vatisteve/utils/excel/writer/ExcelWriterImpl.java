@@ -1,8 +1,8 @@
 package io.github.vatisteve.utils.excel.writer;
 
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
-import io.github.vatisteve.utils.excel.enumeration.ElementIdentifier;
-import io.github.vatisteve.utils.excel.enumeration.ExcelElement;
+import io.github.vatisteve.utils.excel.common.ElementIdentifier;
+import io.github.vatisteve.utils.excel.common.ExcelElement;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,6 +17,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 public class ExcelWriterImpl implements ExcelWriter {
 
@@ -85,8 +86,7 @@ public class ExcelWriterImpl implements ExcelWriter {
         }
     }
 
-    private void detachCellValue(Object value, CellStyle style) {
-        Cell cell = switchToNewCell(style);
+    private void detachAndSetCellValue(Object value, Cell cell) {
         if (value instanceof Boolean) {
             cell.setCellValue((Boolean) value);
         } else if (value instanceof String) {
@@ -206,11 +206,29 @@ public class ExcelWriterImpl implements ExcelWriter {
 
     @Override
     public void addCell(CellAttribute attribute) {
-        if (attribute.getValue() != null) {
-            detachCellValue(attribute.getValue(), attribute.getCellStyle());
-        } else {
-            switchToNewCell().setCellStyle(attribute.getCellStyle());
+        if (attribute.getCellOperation() != null) {
+            try {
+                Cell cell = attribute.getCellOperation().operate(sheet, switchToNewCell());
+                setCellValue(attribute, cell);
+                return; // complete job
+            } catch (ExcelWriterException e) {
+                // Add warning ...
+                // Ignore exception and continue to the next job
+            }
         }
+        Cell cell = newCellFrom(attribute);
+        setCellValue(attribute, cell);
+    }
+
+    private void setCellValue(CellAttribute attribute, Cell cell) {
+        if (attribute.getValue() != null) {
+            detachAndSetCellValue(attribute.getValue(), cell);
+        }
+    }
+
+    private Cell newCellFrom(CellAttribute attribute) {
+        return Optional.ofNullable(attribute.getCellStyle())
+                .map(this::switchToNewCell).orElseGet(this::switchToNewCell);
     }
 
     @Override
