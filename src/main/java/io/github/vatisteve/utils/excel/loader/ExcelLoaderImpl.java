@@ -5,14 +5,13 @@ import io.github.vatisteve.utils.excel.common.ExcelElement;
 import io.github.vatisteve.utils.excel.helper.ExcelHelper;
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellAddress;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -104,12 +103,36 @@ public class ExcelLoaderImpl implements ExcelLoader {
         }
     }
 
+    private Instant castToInstant(int s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        try {
+            Sheet workingSheet = workbook.getSheetAt(s);
+            return castToInstant(workingSheet, c, r);
+        } catch (IllegalArgumentException e) {
+            throw new ElementNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s);
+        }
+    }
+
     private String castToString(String s, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         try {
             Sheet workingSheet = workbook.getSheet(s);
             return castToString(workingSheet, c, r);
         } catch (IllegalArgumentException e) {
             throw new ElementNotFoundException(ExcelElement.SHEET, ElementIdentifier.NAME, s);
+        }
+    }
+
+    private Instant castToInstant(Sheet sheet, int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        try {
+            Cell cell = Optional.ofNullable(ExcelHelper.getCell(sheet, c, r))
+                    .orElseThrow(() -> new ElementNotFoundException(ExcelElement.CELL, ElementIdentifier.POSITION, c, r));
+
+            if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+                return cell.getDateCellValue().toInstant();
+            }
+
+            return null; // Không phải ngày thì trả về null
+        } catch (ClassCastException e) {
+            throw new CastCellValueExcelLoaderException(e.getMessage());
         }
     }
 
@@ -151,6 +174,11 @@ public class ExcelLoaderImpl implements ExcelLoader {
     @Override
     public String getString(String s, CellAddress c) throws ElementNotFoundException, CastCellValueExcelLoaderException {
         return getString(s, c.getColumn(), c.getRow());
+    }
+
+    @Override
+    public Instant getInstant(int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException {
+        return castToInstant(defaultSheet,c, r);
     }
 
     @Override

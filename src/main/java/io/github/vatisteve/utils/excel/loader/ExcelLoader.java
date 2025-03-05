@@ -1,6 +1,7 @@
 package io.github.vatisteve.utils.excel.loader;
 
 import java.io.Closeable;
+import java.time.Instant;
 
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -144,6 +145,17 @@ public interface ExcelLoader extends Closeable {
      */
     String getString(String s, CellAddress c)
             throws ElementNotFoundException, CastCellValueExcelLoaderException;
+
+    /**
+     * @param s the sheet name
+     * @param c the {@link CellAddress} from apache-poi
+     * @return the cell value type Date
+     * @throws ElementNotFoundException if there is no cell with that
+     *                                             address
+     * @throws CastCellValueExcelLoaderException   if the cell value is not long
+     *                                             type or can't cast to String
+     */
+    Instant getInstant(int c, int r) throws ElementNotFoundException, CastCellValueExcelLoaderException;
 
     /**
      * @param s the sheet index
