@@ -15,21 +15,36 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiConsumer;
 
+/**
+ * Implementation of the ExcelWriter for writing data to Excel spreadsheets.
+ * This class provides methods to write data to a workbook, manage rows and cells,
+ * apply styles, and build the resulting Excel file.
+ * <p>
+ * The class supports various data types and allows customization of cell styles.
+ */
 public class ExcelWriterImpl implements ExcelWriter {
 
     private final Workbook workbook;
     private final ExcelWriterConfiguration configuration;
     private final CellStyle defaultCellStyle;
+    private final DateTimeFormatter timeFormatter;
+    private final Map<Class<?>, BiConsumer<Object, Cell>> valueHandlers;
     private Sheet sheet = null;
     private Row currentRow = null;
     private int nextRowIdx = 0;
     private int nextColumnIdx = 0;
     private int cellIncrement = 1;
 
+    /**
+     * Constructs an instance of ExcelWriterImpl, initializing the workbook and configuration.
+     *
+     * @param is the InputStream containing the Excel template to initialize the workbook
+     * @param configuration the ExcelWriterConfiguration providing customizations for the Excel writer
+     * @throws ExcelWriterException if an error occurs while creating or configuring the workbook
+     */
     public ExcelWriterImpl(InputStream is, ExcelWriterConfiguration configuration) throws ExcelWriterException {
         try {
             this.workbook = new SXSSFWorkbook(new XSSFWorkbook(is), -1, true);
@@ -38,16 +53,52 @@ public class ExcelWriterImpl implements ExcelWriter {
         }
         this.configuration = configuration;
         this.defaultCellStyle = configuration.cellStyle(workbook);
+        this.timeFormatter = DateTimeFormatter.ofPattern(configuration.timeFormat());
+        this.valueHandlers = initValueHandlers();
         initHeader();
     }
 
+    /**
+     * Constructs an instance of ExcelWriterImpl, initializing the workbook, sheet, and default cell style
+     * based on the provided configuration.
+     *
+     * @param configuration the ExcelWriterConfiguration instance that provides the initial setup
+     *                       and customizations for the Excel writer, such as sheet naming
+     *                       and default cell style.
+     */
     public ExcelWriterImpl(ExcelWriterConfiguration configuration) {
         this.workbook = new SXSSFWorkbook();
         this.configuration = configuration;
         this.sheet = workbook.createSheet();
         this.workbook.setSheetName(0, configuration.sheetName(0));
         this.defaultCellStyle = configuration.cellStyle(workbook);
+        this.timeFormatter = DateTimeFormatter.ofPattern(configuration.timeFormat());
+        this.valueHandlers = initValueHandlers();
         initHeader();
+    }
+
+    private Map<Class<?>, BiConsumer<Object, Cell>> initValueHandlers() {
+        Map<Class<?>, BiConsumer<Object, Cell>> handlers = new HashMap<>();
+        handlers.put(Boolean.class, (v, c) -> c.setCellValue((Boolean) v));
+        handlers.put(String.class, (v, c) -> c.setCellValue((String) v));
+        handlers.put(Byte.class, (v, c) -> c.setCellValue((Byte) v));
+        handlers.put(Integer.class, (v, c) -> c.setCellValue((Integer) v));
+        handlers.put(Short.class, (v, c) -> c.setCellValue((Short) v));
+        handlers.put(Long.class, (v, c) -> c.setCellValue((Long) v));
+        handlers.put(Float.class, (v, c) -> c.setCellValue((Float) v));
+        handlers.put(Double.class, (v, c) -> c.setCellValue((Double) v));
+        handlers.put(Character.class, (v, c) -> c.setCellValue((Character) v));
+        handlers.put(Instant.class, (v, c) -> c.setCellValue(fromInstant((Instant) v)));
+        handlers.put(ZonedDateTime.class, (v, c) -> c.setCellValue(fromZonedDateTime((ZonedDateTime) v)));
+        handlers.put(OffsetDateTime.class, (v, c) -> c.setCellValue(fromOffsetDateTime((OffsetDateTime) v)));
+        handlers.put(Date.class, (v, c) -> c.setCellValue((Date) v));
+        handlers.put(LocalDate.class, (v, c) -> c.setCellValue((LocalDate) v));
+        handlers.put(LocalDateTime.class, (v, c) -> c.setCellValue((LocalDateTime) v));
+        handlers.put(LocalTime.class, (v, c) -> c.setCellValue(fromLocalTime((LocalTime) v)));
+        handlers.put(Calendar.class, (v, c) -> c.setCellValue((Calendar) v));
+        handlers.put(BigDecimal.class, (v, c) -> c.setCellValue(fromBigDecimal((BigDecimal) v)));
+        handlers.put(BigInteger.class, (v, c) -> c.setCellValue(fromBigInteger((BigInteger) v)));
+        return handlers;
     }
 
     private Cell switchToNewCell() {
@@ -87,46 +138,21 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     private void detachAndSetCellValue(Object value, Cell cell) {
-        if (value instanceof Boolean) {
-            cell.setCellValue((Boolean) value);
-        } else if (value instanceof String) {
-            cell.setCellValue((String) value);
-        } else if (value instanceof Byte) {
-            cell.setCellValue((Byte) value);
-        } else if (value instanceof Integer) {
-            cell.setCellValue((Integer) value);
-        } else if (value instanceof Short) {
-            cell.setCellValue((Short) value);
-        } else if (value instanceof Long) {
-            cell.setCellValue((Long) value);
-        } else if (value instanceof Float) {
-            cell.setCellValue((Float) value);
-        } else if (value instanceof Double) {
-            cell.setCellValue((Double) value);
-        } else if (value instanceof Character) {
-            cell.setCellValue((Character) value);
-        } else if (value instanceof Instant) {
-            cell.setCellValue(fromInstant((Instant) value));
-        } else if (value instanceof ZonedDateTime) {
-            cell.setCellValue(fromZonedDateTime((ZonedDateTime) value));
-        } else if (value instanceof OffsetDateTime) {
-            cell.setCellValue(fromOffsetDateTime((OffsetDateTime) value));
-        } else if (value instanceof Date) {
-            cell.setCellValue((Date) value);
-        } else if (value instanceof LocalDate) {
-            cell.setCellValue((LocalDate) value);
-        } else if (value instanceof LocalDateTime) {
-            cell.setCellValue((LocalDateTime) value);
-        } else if (value instanceof LocalTime) {
-            cell.setCellValue(fromLocalTime((LocalTime) value));
-        } else if (value instanceof Calendar) {
-            cell.setCellValue((Calendar) value);
-        } else if (value instanceof BigDecimal) {
-            cell.setCellValue(fromBigDecimal((BigDecimal) value));
-        } else if (value instanceof BigInteger) {
-            cell.setCellValue(fromBigInteger((BigInteger) value));
+        if (value == null) {
+            cell.setBlank();
+            return;
+        }
+        BiConsumer<Object, Cell> handler = valueHandlers.get(value.getClass());
+        if (handler != null) {
+            handler.accept(value, cell);
         } else {
-            cell.setCellValue(value.toString());
+            // Check for potential subclasses of handled types (e.g., java.sql.Date)
+            valueHandlers.entrySet().stream()
+                    .filter(entry -> entry.getKey().isInstance(value))
+                    .findFirst()
+                    .map(Map.Entry::getValue)
+                    .orElseGet(() -> (v, c) -> c.setCellValue(v.toString()))
+                    .accept(value, cell);
         }
     }
 
@@ -143,7 +169,7 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     private String fromLocalTime(LocalTime value) {
-        return DateTimeFormatter.ofPattern(configuration.timeFormat()).format(value);
+        return timeFormatter.format(value);
     }
 
     private static String fromBigDecimal(BigDecimal value) {
@@ -248,282 +274,19 @@ public class ExcelWriterImpl implements ExcelWriter {
     }
 
     @Override
-    public void addCell(String value) {
-        switchToNewCell().setCellValue(value);
+    public void addCell(Object value) {
+        detachAndSetCellValue(value, switchToNewCell());
     }
 
     @Override
-    public void addCell(byte value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(int value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(short value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(long value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(float value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(double value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(boolean value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(char value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(String value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(byte value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(int value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(short value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(long value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(float value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(double value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(boolean value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(char value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Byte value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Integer value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Short value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Long value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Float value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Double value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Boolean value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Character value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Byte value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Integer value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Short value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Long value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Float value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Double value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Boolean value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Character value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Instant value) {
-        switchToNewCell().setCellValue(fromInstant(value));
-    }
-
-    @Override
-    public void addCell(ZonedDateTime value) {
-        switchToNewCell().setCellValue(fromZonedDateTime(value));
-    }
-
-    @Override
-    public void addCell(OffsetDateTime value) {
-        switchToNewCell().setCellValue(fromOffsetDateTime(value));
-    }
-
-    @Override
-    public void addCell(Date value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(LocalDate value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(LocalTime value) {
-        switchToNewCell().setCellValue(fromLocalTime(value));
-    }
-
-    @Override
-    public void addCell(LocalDateTime value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Calendar value) {
-        switchToNewCell().setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Instant value, CellStyle style) {
-        switchToNewCell(style).setCellValue(fromInstant(value));
-    }
-
-    @Override
-    public void addCell(ZonedDateTime value, CellStyle style) {
-        switchToNewCell().setCellValue(fromZonedDateTime(value));
-    }
-
-    @Override
-    public void addCell(OffsetDateTime value, CellStyle style) {
-        switchToNewCell().setCellValue(fromOffsetDateTime(value));
-    }
-
-    @Override
-    public void addCell(Date value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(LocalDate value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(LocalTime value, CellStyle style) {
-        switchToNewCell(style).setCellValue(fromLocalTime(value));
-    }
-
-    @Override
-    public void addCell(LocalDateTime value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(Calendar value, CellStyle style) {
-        switchToNewCell(style).setCellValue(value);
-    }
-
-    @Override
-    public void addCell(BigDecimal value) {
-        switchToNewCell().setCellValue(fromBigDecimal(value));
-    }
-
-    @Override
-    public void addCell(BigInteger value) {
-        switchToNewCell().setCellValue(fromBigInteger(value));
-    }
-
-    @Override
-    public void addCell(BigDecimal value, CellStyle style) {
-        switchToNewCell(style).setCellValue(fromBigDecimal(value));
-    }
-
-    @Override
-    public void addCell(BigInteger value, CellStyle style) {
-        switchToNewCell(style).setCellValue(fromBigInteger(value));
+    public void addCell(Object value, CellStyle style) {
+        detachAndSetCellValue(value, switchToNewCell(style));
     }
 
     @Override
     public byte[] build() throws ExcelWriterException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             workbook.write(bos);
-            if (workbook instanceof SXSSFWorkbook) {
-                ((SXSSFWorkbook) workbook).dispose();
-            }
             return bos.toByteArray();
         } catch (IOException e) {
             throw new ExcelWriterException(String.format("IOException occurred: %s", e.getMessage()));

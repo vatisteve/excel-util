@@ -7,84 +7,111 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.*;
-import java.util.Calendar;
-import java.util.Date;
 
+/**
+ * An interface for creating and writing data to Excel files. This interface provides
+ * methods for configuring sheets, rows, and cells within an Excel workbook. It
+ * supports writing various data types to cells, applying styles, and exporting
+ * the workbook to a byte array or an output stream.
+ */
 public interface ExcelWriter extends Closeable {
+
+    /**
+     * Retrieves the workbook instance.
+     *
+     * @return The Workbook object representing a spreadsheet or workbook.
+     */
     Workbook getWorkbook();
+
     // initializer
+    /**
+     * Moves the writer's current position to a specific cell in the specified sheet.
+     *
+     * @param sheetIndex the index of the sheet within the workbook to move to (zero-based)
+     * @param rowIndex the index of the row within the sheet to position at (zero-based)
+     * @param columnIndex the index of the column within the sheet to position at (zero-based)
+     * @throws ElementNotFoundException if the specified sheet, row, or column cannot be found
+     */
     void startAtSheet(int sheetIndex, int rowIndex, int columnIndex) throws ElementNotFoundException;
+
+    /**
+     * Moves the writer's current position to a specific cell in the specified sheet.
+     */
     void startNewRow();
+
+    /**
+     * Moves the writer's current position to a specific cell in the specified sheet.
+     * @param height the height of the row
+     */
     void startNewRow(short height);
+
+    /**
+     * Moves the writer's current position to a specific cell in the specified sheet.
+     * @param index the index of the row within the sheet to position at (zero-based)
+     * @throws ElementNotFoundException if the specified row cannot be found
+     */
     void startAtRow(int index) throws ElementNotFoundException;
+
+    /**
+     * Moves the writer's current position to a specific cell in the specified sheet.
+     * @param index the index of the row within the sheet to position at (zero-based)
+     * @param height the height of the row
+     * @throws ElementNotFoundException if the specified row cannot be found
+     */
     void startAtRow(int index, short height) throws ElementNotFoundException;
+
     // functions
+
+    /**
+     * Add a cell to the current row.
+     * @param attribute the {@link CellAttribute} to add
+     */
     void addCell(CellAttribute attribute);
+
+    /**
+     * Add a cell to the current row.
+     * @param value the value to add
+     */
+    void addCell(Object value);
+
+    /**
+     * Add a cell to the current row.
+     * @param value the value to add
+     * @param style the {@link CellStyle} to set
+     */
+    void addCell(Object value, CellStyle style);
+
+    /**
+     * Set the cell style.
+     * @param style the {@link CellStyle} to set
+     */
     void setCellStyle(CellStyle style);
+
+    /**
+     * Auto increment the current cell.
+     */
     void autoIncrementCell();
+
+    /**
+     * Auto increment the current cell.
+     * @param style the {@link CellStyle} to set
+     */
     void autoIncrementCell(CellStyle style);
-    // primitive types
-    void addCell(String value);
-    void addCell(byte value);
-    void addCell(int value);
-    void addCell(short value);
-    void addCell(long value);
-    void addCell(float value);
-    void addCell(double value);
-    void addCell(boolean value);
-    void addCell(char value);
-    void addCell(String value, CellStyle style);
-    void addCell(byte value, CellStyle style);
-    void addCell(int value, CellStyle style);
-    void addCell(short value, CellStyle style);
-    void addCell(long value, CellStyle style);
-    void addCell(float value, CellStyle style);
-    void addCell(double value, CellStyle style);
-    void addCell(boolean value, CellStyle style);
-    void addCell(char value, CellStyle style);
-    // wrapper classes
-    void addCell(Byte value);
-    void addCell(Integer value);
-    void addCell(Short value);
-    void addCell(Long value);
-    void addCell(Float value);
-    void addCell(Double value);
-    void addCell(Boolean value);
-    void addCell(Character value);
-    void addCell(Byte value, CellStyle style);
-    void addCell(Integer value, CellStyle style);
-    void addCell(Short value, CellStyle style);
-    void addCell(Long value, CellStyle style);
-    void addCell(Float value, CellStyle style);
-    void addCell(Double value, CellStyle style);
-    void addCell(Boolean value, CellStyle style);
-    void addCell(Character value, CellStyle style);
-    // Date and time
-    void addCell(Instant value);
-    void addCell(ZonedDateTime value);
-    void addCell(OffsetDateTime value);
-    void addCell(Date value);
-    void addCell(LocalDate value);
-    void addCell(LocalTime value);
-    void addCell(LocalDateTime value);
-    void addCell(Calendar value);
-    void addCell(Instant value, CellStyle style);
-    void addCell(ZonedDateTime value, CellStyle style);
-    void addCell(OffsetDateTime value, CellStyle style);
-    void addCell(Date value, CellStyle style);
-    void addCell(LocalDate value, CellStyle style);
-    void addCell(LocalTime value, CellStyle style);
-    void addCell(LocalDateTime value, CellStyle style);
-    void addCell(Calendar value, CellStyle style);
-    // Other types
-    void addCell(BigDecimal value);
-    void addCell(BigInteger value);
-    void addCell(BigDecimal value, CellStyle style);
-    void addCell(BigInteger value, CellStyle style);
+
     // build
+
+    /**
+     * Build the workbook and return the byte array.
+     * @return the byte array containing the workbook data
+     * @throws ExcelWriterException if an error occurs during the build process
+     */
     byte[] build() throws ExcelWriterException;
+
+    /**
+     * Constructs and writes the content to the specified output stream.
+     *
+     * @param outputStream the output stream where the content will be written
+     * @throws IOException if an I/O error occurs during writing
+     */
     void build(OutputStream outputStream) throws IOException;
 }
