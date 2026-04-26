@@ -6,8 +6,6 @@ import java.time.ZoneId;
 
 public class SampleExcelWriterConfig implements ExcelWriterConfiguration {
 
-//    private ExcelHeader excelHeader;
-
     @Override
     public ZoneId zoneId() {
         return ZoneId.of("Asia/Saigon");

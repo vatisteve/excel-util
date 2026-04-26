@@ -16,11 +16,24 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Implementation of the {@link ExcelLoader} interface for handling Excel files.
+ * Provides methods to access and manipulate data within an Excel workbook,
+ * supporting operations on sheets, rows, and cells.
+ */
 public class ExcelLoaderImpl implements ExcelLoader {
 
     private final Workbook workbook;
     private Sheet defaultSheet;
 
+    /**
+     * Constructs an instance of ExcelLoaderImpl, loading a workbook from the provided input stream.
+     * Initializes the default sheet to the first sheet in the workbook.
+     *
+     * @param inputStream the input stream from which the Excel workbook will be loaded
+     * @throws EncryptedDocumentException if the workbook is encrypted and cannot be accessed
+     * @throws IOException if an I/O error occurs while reading the input stream
+     */
     public ExcelLoaderImpl(InputStream inputStream) throws EncryptedDocumentException, IOException {
         workbook = WorkbookFactory.create(inputStream);
         defaultSheet = workbook.getSheetAt(0);

@@ -5,7 +5,6 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 
 public class SampleDomain implements Serializable {
 
@@ -27,8 +26,6 @@ public class SampleDomain implements Serializable {
     private byte monthNumber;
     private String monthName;
     private int year;
-
-    public SampleDomain() {}
 
     public void setSegment(String segment) {
         this.segment = segment;
@@ -99,7 +96,7 @@ public class SampleDomain implements Serializable {
         writer.addCell(country);
         writer.addCell(product);
         writer.addCell(discountBand);
-        writer.addCell("unitsSold");
+        writer.addCell(unitsSold);
         CellStyle moneyStyle = writer.getWorkbook().createCellStyle();
         moneyStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
         moneyStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
