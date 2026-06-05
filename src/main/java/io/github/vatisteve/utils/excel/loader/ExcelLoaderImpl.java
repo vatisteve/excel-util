@@ -50,7 +50,7 @@ public class ExcelLoaderImpl implements ExcelLoader {
 
     @Override
     public void setDefaultSheet(String s) throws ElementNotFoundException {
-        this.defaultSheet = Optional.ofNullable(workbook.getSheet(s)).orElseThrow(() -> new ElementNotFoundException(ExcelElement.SHEET, ElementIdentifier.POSITION, s));
+        this.defaultSheet = Optional.ofNullable(workbook.getSheet(s)).orElseThrow(() -> new ElementNotFoundException(ExcelElement.SHEET, ElementIdentifier.NAME, s));
     }
 
     @Override

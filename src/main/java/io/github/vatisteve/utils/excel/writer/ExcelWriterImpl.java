@@ -3,6 +3,8 @@ package io.github.vatisteve.utils.excel.writer;
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import io.github.vatisteve.utils.excel.common.ElementIdentifier;
 import io.github.vatisteve.utils.excel.common.ExcelElement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -26,6 +28,8 @@ import java.util.function.BiConsumer;
  * The class supports various data types and allows customization of cell styles.
  */
 public class ExcelWriterImpl implements ExcelWriter {
+
+    private static final Logger log = LogManager.getLogger(ExcelWriterImpl.class);
 
     private final Workbook workbook;
     private final ExcelWriterConfiguration configuration;
@@ -101,13 +105,22 @@ public class ExcelWriterImpl implements ExcelWriter {
         return handlers;
     }
 
+    private void requireCurrentRow() {
+        if (currentRow == null) {
+            throw new IllegalStateException(
+                    "No active row. Call startNewRow(...) or startAtRow(...) before adding cells.");
+        }
+    }
+
     private Cell switchToNewCell() {
+        requireCurrentRow();
         Cell cell = currentRow.getCell(nextColumnIdx++, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
         if (defaultCellStyle != null) cell.setCellStyle(defaultCellStyle);
         return cell;
     }
 
     private Cell switchToNewCell(CellStyle style) {
+        requireCurrentRow();
         Cell newCell = currentRow.getCell(nextColumnIdx++, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
         newCell.setCellStyle(style);
         return newCell;
@@ -232,17 +245,19 @@ public class ExcelWriterImpl implements ExcelWriter {
 
     @Override
     public void addCell(CellAttribute attribute) {
+        // Create the cell exactly once (honoring the attribute's own style and advancing
+        // the column cursor a single time), then optionally apply the custom operation.
+        Cell cell = newCellFrom(attribute);
         if (attribute.getCellOperation() != null) {
             try {
-                Cell cell = attribute.getCellOperation().operate(sheet, switchToNewCell());
-                setCellValue(attribute, cell);
-                return; // complete job
+                cell = attribute.getCellOperation().operate(sheet, cell);
             } catch (ExcelWriterException e) {
-                // Add warning ...
-                // Ignore exception and continue to the next job
+                // Fall back to the plain cell rather than skipping a column or silently
+                // dropping the failure.
+                log.warn("Cell operation failed at row {}, column {}; writing value to the plain cell instead",
+                        nextRowIdx - 1, nextColumnIdx - 1, e);
             }
         }
-        Cell cell = newCellFrom(attribute);
         setCellValue(attribute, cell);
     }
 
@@ -300,6 +315,8 @@ public class ExcelWriterImpl implements ExcelWriter {
 
     @Override
     public void close() throws IOException {
+        // SXSSFWorkbook.close() already disposes the temporary backing files internally
+        // (and dispose() is deprecated in POI 5.x), so closing is enough here.
         this.workbook.close();
     }
 }

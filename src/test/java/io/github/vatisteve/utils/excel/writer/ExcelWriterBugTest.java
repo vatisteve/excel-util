@@ -7,10 +7,11 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.ZonedDateTime;
 import java.time.OffsetDateTime;
 
@@ -41,8 +42,8 @@ public class ExcelWriterBugTest extends AbstractUtilsTest {
             Cell cell1 = sheet.getRow(0).getCell(0);
             Cell cell2 = sheet.getRow(0).getCell(1);
             
-            Assert.assertEquals("ZonedDateTime cell should have red style", redStyle.getIndex(), cell1.getCellStyle().getIndex());
-            Assert.assertEquals("OffsetDateTime cell should have red style", redStyle.getIndex(), cell2.getCellStyle().getIndex());
+            assertEquals(redStyle.getIndex(), cell1.getCellStyle().getIndex(), "ZonedDateTime cell should have red style");
+            assertEquals(redStyle.getIndex(), cell2.getCellStyle().getIndex(), "OffsetDateTime cell should have red style");
         }
     }
 }
