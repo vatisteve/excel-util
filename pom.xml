@@ -13,7 +13,7 @@
     <description>
         The simple excel util with apache POI
     </description>
-    <url>https://github.com/vatisteve/excel-util</url>
+    <url>https://github.com/vatidaniel/excel-util</url>
 
     <licenses>
         <license>
@@ -32,9 +32,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:vatisteve/excel-util.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:vatisteve/excel-util.git</developerConnection>
-        <url>https://github.com/vatisteve/excel-util/tree/main</url>
+        <connection>scm:git:git@github.com:vatidaniel/excel-util.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:vatidaniel/excel-util.git</developerConnection>
+        <url>https://github.com/vatidaniel/excel-util/tree/main</url>
     </scm>
 
     <properties>

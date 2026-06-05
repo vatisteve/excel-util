@@ -25,38 +25,53 @@ public interface ExcelWriter extends Closeable {
 
     // initializer
     /**
-     * Moves the writer's current position to a specific cell in the specified sheet.
+     * Selects the active sheet and moves the cursor to the given row and column position.
+     * <p>
+     * This only sets the sheet and cursor indices; it does not make a row active. Call
+     * {@link #startNewRow()} or {@link #startAtRow(int)} before adding cells, otherwise the
+     * first {@code addCell(...)} will throw {@link IllegalStateException}.
      *
      * @param sheetIndex the index of the sheet within the workbook to move to (zero-based)
      * @param rowIndex the index of the row within the sheet to position at (zero-based)
      * @param columnIndex the index of the column within the sheet to position at (zero-based)
-     * @throws ElementNotFoundException if the specified sheet, row, or column cannot be found
+     * @throws ElementNotFoundException if the specified sheet cannot be found
      */
     void startAtSheet(int sheetIndex, int rowIndex, int columnIndex) throws ElementNotFoundException;
 
     /**
-     * Moves the writer's current position to a specific cell in the specified sheet.
+     * Creates a new row at the next row position, makes it the active row, and resets the
+     * column cursor to the first column.
      */
     void startNewRow();
 
     /**
-     * Moves the writer's current position to a specific cell in the specified sheet.
+     * Creates a new row at the next row position with the given height, makes it the active
+     * row, and resets the column cursor to the first column.
      * @param height the height of the row
      */
     void startNewRow(short height);
 
     /**
-     * Moves the writer's current position to a specific cell in the specified sheet.
+     * Positions the cursor on an existing row, makes it the active row, and resets the column
+     * cursor to the first column.
+     * <p>
+     * Because the underlying workbook streams rows to disk, only rows still held in the
+     * streaming window — i.e. rows created earlier in this writing session — can be revisited.
+     * Rows that already existed in a template loaded from an {@code InputStream} are not
+     * reachable and will be reported as not found.
+     *
      * @param index the index of the row within the sheet to position at (zero-based)
-     * @throws ElementNotFoundException if the specified row cannot be found
+     * @throws ElementNotFoundException if the specified row is not present in the streaming window
      */
     void startAtRow(int index) throws ElementNotFoundException;
 
     /**
-     * Moves the writer's current position to a specific cell in the specified sheet.
+     * Positions the cursor on an existing row, applies the given height, makes it the active
+     * row, and resets the column cursor to the first column. The same streaming-window
+     * limitation described on {@link #startAtRow(int)} applies.
      * @param index the index of the row within the sheet to position at (zero-based)
      * @param height the height of the row
-     * @throws ElementNotFoundException if the specified row cannot be found
+     * @throws ElementNotFoundException if the specified row is not present in the streaming window
      */
     void startAtRow(int index, short height) throws ElementNotFoundException;
 
