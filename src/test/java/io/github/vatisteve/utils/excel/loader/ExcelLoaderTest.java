@@ -1,21 +1,18 @@
 package io.github.vatisteve.utils.excel.loader;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import io.github.vatisteve.utils.excel.AbstractUtilsTest;
 import io.github.vatisteve.utils.excel.ElementNotFoundException;
 import io.github.vatisteve.utils.excel.writer.SampleDomain;
 import org.apache.poi.ss.util.CellAddress;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import io.github.vatisteve.utils.excel.ExcelUtilsFactory;
@@ -56,7 +53,8 @@ public class ExcelLoaderTest extends AbstractUtilsTest {
         }
     }
 
-    public static SampleDomain getSampleDomainData(InputStream sourceStream) {
+    public static SampleDomain getSampleDomainData(InputStream sourceStream)
+            throws IOException, ElementNotFoundException, CastCellValueExcelLoaderException {
         SampleDomain sample = new SampleDomain();
         try(ExcelLoader loader = ExcelUtilsFactory.createExcelLoader(sourceStream)) {
             sample.setSegment(loader.getString(0, 1));
@@ -66,7 +64,7 @@ public class ExcelLoaderTest extends AbstractUtilsTest {
             sample.setUnitsSold(loader.getValue(new CellAddress("E2")));
             sample.setGrossSales(BigDecimal.valueOf((Double) loader.getValue(new CellAddress("H14"))));
             sample.setDate(LocalDate.of(1900, Month.JANUARY, 1).plusDays(loader.getLong(new CellAddress("M2")) - 2));
-        } catch (IOException | ElementNotFoundException | CastCellValueExcelLoaderException ignored) {}
+        }
         return sample;
     }
 }
